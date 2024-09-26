@@ -61,4 +61,21 @@ if 1 let z = x + y;
 // If One if One if One Liners
 if 1 if 1 if 0 exit (3);
 // :)
+
+// Else & Else if
+if 0 {
+    exit(3);
+} else if (0) {
+    exit 2;
+} else if 0 {
+    exit 1;
+} else {
+   exit 0;
+}
+
+// Compact Else & Else If
+if 0 exit 1;
+else if 1 exit 2;
+else exit 3;
+
 ```
