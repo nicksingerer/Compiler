@@ -13,8 +13,12 @@ $$
 [\text{Statement}] &\to  \begin{cases}
 	exit\text{ [Expression];}  \\
 	let\text{ identifier  = [Expression];}  \\
-	if\text{ [Expression] [Statement] }  \\
+	if\text{ [Expression] [Statement] [Else]}  \\
 	\{[\text{Scope}]\}
+\end{cases}  \\
+[\text{Else}] &\to  \begin{cases}
+	\text{else [Statement]} \\
+	\epsilon
 \end{cases}  \\
 [\text{Expression}] &\to  \begin{cases}
 	\text{integer }  \\
