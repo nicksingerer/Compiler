@@ -4,6 +4,7 @@ enum class TokenType {
     EXIT,
 
     IF,
+    ELSE,
 
     LET,
     IDENTIFIER,
@@ -70,6 +71,7 @@ public:
                 if (buffer == "exit") tokens.push_back({ .type = TokenType::EXIT });
                 else if (buffer == "let") tokens.push_back({ .type = TokenType::LET });
                 else if (buffer == "if") tokens.push_back({ .type = TokenType::IF });
+                else if (buffer == "else") tokens.push_back({ .type = TokenType::ELSE });
                 else tokens.push_back({ .type = TokenType::IDENTIFIER, .value = buffer });
 
             }
@@ -97,7 +99,8 @@ public:
                 while (hasNext() && !(get() == '*' && peak(1) == '/')) {
                     next();
                 }
-                next(2);
+                if (hasNext()) next();
+                if (hasNext()) next();
             }
 
             else if (get() == ';') {

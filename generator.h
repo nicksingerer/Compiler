@@ -76,12 +76,29 @@ private:
                 generator->generateExpression(ifStatement->condition);
                 generator->pop("rax");
 
-                string label = generator->createLabel();
+                bool hasElse = ifStatement->elseStatement.has_value();
 
-                generator->assembly << "    test rax, rax" << endl // If rax == 2
-                                    << "    jz " << label << endl;
+                string endLabel = generator->createLabel();
+                string elseLabel;
+
+                generator->assembly << "    test rax, rax" << endl;
+
+                if (hasElse) {
+                    elseLabel = generator->createLabel();
+                    generator->assembly << "    jz " << elseLabel << endl;
+                } else {
+                    generator->assembly << "    jz " << endLabel << endl;
+                }
+
                 generator->generateStatement(ifStatement->statement);
-                generator->assembly << label << ":" << endl;
+
+                if (hasElse) {
+                    generator->assembly << "    jmp " << endLabel << endl
+                                        << elseLabel << ":" << endl;
+                    generator->generateStatement(ifStatement->elseStatement.value());
+                }
+
+                generator->assembly << endLabel << ":" << endl;
 
             }
 

@@ -74,10 +74,12 @@ namespace Node {
         struct If {
             Expression* condition;
             Statement* statement;
+            optional<Statement*> elseStatement;
         };
 
     }
 
+    // TODO Refactor code to use "using" instead of "struct"
     struct Statement {
         variant<StatementVariant::Exit*, StatementVariant::Let*, StatementVariant::If*, Scope*> variant;
     };
@@ -184,6 +186,11 @@ private:
 
                 ifStatement->condition = parseExpression();
                 ifStatement->statement = parseStatement().value();
+
+                if (hasNext() && get().type == TokenType::ELSE) {
+                    next();
+                    ifStatement->elseStatement = parseStatement().value();
+                }
 
                 statement->variant = ifStatement;
 
