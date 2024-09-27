@@ -12,7 +12,8 @@ $$
 [\text{Scope}] & \to [\text{Statement}]^*  \\
 [\text{Statement}] & \to \begin{cases}
 	exit\text{ [Expression];}  \\
-	let\text{ identifier  = [Expression];}  \\
+	let\text{ identifier = [Expression];}  \\
+ 	\text{identifier = [Expression];}  \\
 	if\text{ [Expression] [Statement] } (\text{else [Statement]})^{(0-1)} \\
 	\{[\text{Scope}]\}
 \end{cases}  \\
