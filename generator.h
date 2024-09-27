@@ -71,6 +71,27 @@ private:
 
             }
 
+            void operator()(const Node::StatementVariant::Assign* assignStatement) const {
+
+                auto variable = find_if(
+                    generator->variables.cbegin(),
+                    generator->variables.cend(),
+                    [&](const Variable& variable){
+                        return variable.name == assignStatement->identifierToken.value.value();
+                    }
+                );
+
+                if (variable == generator->variables.cend()) {
+                    cerr << "Undeclared identifier: '" << assignStatement->identifierToken.value.value() << "'!" << endl;
+                    exit(EXIT_FAILURE);
+                }
+
+                generator->generateExpression(assignStatement->expression);
+                generator->pop("rax");
+                generator->assembly << "    mov [rsp+" << (generator->stack_size - variable->location - 1) * 8 << "], rax" << endl;
+
+            }
+
             void operator()(const Node::StatementVariant::If* ifStatement) const {
 
                 generator->generateExpression(ifStatement->condition);
@@ -251,6 +272,8 @@ private:
         scopes.pop_back();
     }
 
+    vector<size_t> scopes {};
+
     // Stack
     size_t stack_size = 0;
     void push (const string& reg) {
@@ -268,7 +291,6 @@ private:
         size_t location;
     };
     vector<Variable> variables {};
-    vector<size_t> scopes {};
 
     // Labels
     string createLabel () {

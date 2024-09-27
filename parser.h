@@ -71,9 +71,14 @@ namespace Node {
             Expression* expression {};
         };
 
+        struct Assign {
+            Token identifierToken;
+            Expression* expression {};
+        };
+
         struct If {
-            Expression* condition;
-            Statement* statement;
+            Expression* condition{};
+            Statement* statement{};
             optional<Statement*> elseStatement;
         };
 
@@ -81,7 +86,7 @@ namespace Node {
 
     // TODO Refactor code to use "using" instead of "struct"
     struct Statement {
-        variant<StatementVariant::Exit*, StatementVariant::Let*, StatementVariant::If*, Scope*> variant;
+        variant<StatementVariant::Exit*, StatementVariant::Let*, StatementVariant::Assign*, StatementVariant::If*, Scope*> variant;
     };
 
     struct Scope {
@@ -155,11 +160,6 @@ private:
                     exit(EXIT_FAILURE);
                 }
 
-                if (!get().value.has_value()) {
-                    cerr << "Failed to parse Let Statement! Token value has no value!" << endl;
-                    exit(EXIT_FAILURE);
-                }
-
                 letStatement->identifierToken = get();
                 next();
 
@@ -173,6 +173,28 @@ private:
                 letStatement->expression = parseExpression();
 
                 statement->variant = letStatement;
+
+                break;
+
+            }
+
+            case TokenType::IDENTIFIER: {
+
+                auto assignmentStatement = allocator.allocate<Node::StatementVariant::Assign>();
+
+                assignmentStatement->identifierToken = get();
+                next();
+
+                if (get().type == TokenType::EQUALS) {
+                    next();
+                } else {
+                    cerr << "Failed to parse Let Statement! '=' expected!" << endl;
+                    exit(EXIT_FAILURE);
+                }
+
+                assignmentStatement->expression = parseExpression();
+
+                statement->variant = assignmentStatement;
 
                 break;
 
