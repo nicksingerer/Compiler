@@ -41,6 +41,8 @@ let x = 3;
 // + - * /
 let y = 2 * (x-2) + 4 / 2;
 
+x = 2;
+
 // Round Brackets are optional
 if (0) {
     let exitCode = 123;
