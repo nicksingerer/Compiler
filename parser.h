@@ -155,20 +155,14 @@ private:
 
                 next();
 
-                if (get().type != TokenType::IDENTIFIER) {
-                    cerr << "Failed to parse Let Statement! Identifier expected!" << endl;
-                    exit(EXIT_FAILURE);
-                }
+                if (get().type != TokenType::IDENTIFIER) raise("Failed to parse Expression! Identifier expected", get().line);
 
                 letStatement->identifierToken = get();
                 next();
 
                 if (get().type == TokenType::EQUALS) {
                     next();
-                } else {
-                    cerr << "Failed to parse Let Statement! '=' expected!" << endl;
-                    exit(EXIT_FAILURE);
-                }
+                } else raise("Failed to parse Expression! '=' expected", get().line);
 
                 letStatement->expression = parseExpression();
 
@@ -187,10 +181,7 @@ private:
 
                 if (get().type == TokenType::EQUALS) {
                     next();
-                } else {
-                    cerr << "Failed to parse Let Statement! '=' expected!" << endl;
-                    exit(EXIT_FAILURE);
-                }
+                } else raise("Failed to parse Expression! '=' expected", get().line);
 
                 assignmentStatement->expression = parseExpression();
 
@@ -225,12 +216,8 @@ private:
 
                 auto scope = parseScope();
 
-                if (get().type == TokenType::CLOSED_CURLY_BRACKET) {
-                    next();
-                } else {
-                    cerr << "Failed while parsing Statement! '}' expected!" << endl;
-                    exit(EXIT_FAILURE);
-                }
+                if (get().type == TokenType::CLOSED_CURLY_BRACKET) next();
+                else raise("Failed to parse Expression! '}' expected", get().line);
 
                 statement->variant = scope;
 
@@ -244,21 +231,12 @@ private:
 
             }
 
-            default: {
-
-                cerr << "Unexpected end! Unknown Token!" << endl;
-                exit(EXIT_FAILURE);
-
-            }
+            default: raise("Failed to parse Expression! Unknown token", get().line, get().column);
 
         }
 
-        if (get().type == TokenType::SEMICOLON) {
-            next();
-        } else {
-            cerr << "Warning while parsing Statement! ';' expected!" << endl;
-            exit(EXIT_FAILURE);
-        }
+        if (get().type == TokenType::SEMICOLON) next();
+        else raise("Failed to parse Expression! ';' expected", get().line);
 
         return statement;
 
@@ -300,21 +278,14 @@ private:
             if (get().type == TokenType::CLOSED_ROUND_BRACKET) {
                 next();
             } else {
-                cerr << "Failed to parse Expression! ')' expected!" << endl;
-                exit(EXIT_FAILURE);
+                raise("Failed to parse Expression! ')' expected", get().line);
             }
-
 
             expression = allocator.allocate<Node::Expression>();
             expression->variant = roundBracketExpression;
 
 
-        } else {
-
-            cerr << "Failed to parse Expression! Unexpected Token!" << endl;
-            exit(EXIT_FAILURE);
-
-        }
+        } else raise("Failed to parse Expression! Unexpected Token", get().line, get().column);
 
         while (true) {
 
@@ -359,10 +330,7 @@ private:
                         term->variant = divisionTerm;
                         break;
                     }
-                    default: {
-                        std::cerr << "Failed to parse Expression! Unexpected operator type!" << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
+                    default: raise("Failed to parse Therm! Unexpected Operator Type", get().line, get().column);
                 }
 
                 expression = allocator.allocate<Node::Expression>();
@@ -375,9 +343,10 @@ private:
         return expression;
 
     }
-
+    // Allocation
     ArenaAllocator allocator;
 
+    // Tokens
     const vector<Token> tokens;
     size_t pointer = 0;
 
@@ -401,6 +370,17 @@ private:
 
     [[nodiscard]] inline bool hasNext() const {
         return pointer < tokens.size();
+    }
+
+    // Errors
+    static void raise(const string& message, size_t line, size_t column) {
+        cerr << message << " at " << line << ":" << column << "!" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    static void raise(const string& message, size_t line) {
+        cerr << message << " at line " << line << "!" << endl;
+        exit(EXIT_FAILURE);
     }
 
 };

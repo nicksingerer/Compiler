@@ -40,6 +40,8 @@ optional<int> getBinaryPrecedence (TokenType type) {
 
 struct Token {
     TokenType type;
+    size_t line;
+    size_t column;
     optional<string> value;
 };
 
@@ -52,10 +54,11 @@ public:
 
     inline vector<Token> tokenize() {
 
-        vector<Token> tokens;
         string buffer;
 
         while (hasNext()) {
+
+
 
             if (isspace(get())) {
                 next();
@@ -68,11 +71,11 @@ public:
                     next();
                 }
 
-                if (buffer == "exit") tokens.push_back({ .type = TokenType::EXIT });
-                else if (buffer == "let") tokens.push_back({ .type = TokenType::LET });
-                else if (buffer == "if") tokens.push_back({ .type = TokenType::IF });
-                else if (buffer == "else") tokens.push_back({ .type = TokenType::ELSE });
-                else tokens.push_back({ .type = TokenType::IDENTIFIER, .value = buffer });
+                if (buffer == "exit") append( TokenType::EXIT );
+                else if (buffer == "let") append( TokenType::LET );
+                else if (buffer == "if") append( TokenType::IF );
+                else if (buffer == "else") append( TokenType::ELSE );
+                else append(TokenType::IDENTIFIER, buffer );
 
             }
 
@@ -83,7 +86,7 @@ public:
                     next();
                 }
 
-                tokens.push_back({.type = TokenType::INTEGER, .value = buffer});
+                append(TokenType::INTEGER, buffer);
 
             }
 
@@ -95,7 +98,8 @@ public:
             }
 
             else if (get() == '/' && peak(1) == '*') {
-                next(2);
+                next();
+                next();
                 while (hasNext() && !(get() == '*' && peak(1) == '/')) {
                     next();
                 }
@@ -104,52 +108,52 @@ public:
             }
 
             else if (get() == ';') {
-                tokens.push_back({.type = TokenType::SEMICOLON});
+                append(TokenType::SEMICOLON);
                 next();
             }
 
             else if (get() == '=') {
-                tokens.push_back({.type = TokenType::EQUALS});
+                append(TokenType::EQUALS);
                 next();
             }
 
             else if (get() == '+') {
-                tokens.push_back({.type = TokenType::PLUS});
+                append(TokenType::PLUS);
                 next();
             }
 
             else if (get() == '-') {
-                tokens.push_back({.type = TokenType::MINUS});
+                append(TokenType::MINUS);
                 next();
             }
 
             else if (get() == '*') {
-                tokens.push_back({.type = TokenType::ASTERISK});
+                append(TokenType::ASTERISK);
                 next();
             }
 
             else if (get() == '/') {
-                tokens.push_back({.type = TokenType::SLASH});
+                append(TokenType::SLASH);
                 next();
             }
 
             else if (get() == '(') {
-                tokens.push_back({.type = TokenType::OPEN_ROUND_BRACKET});
+                append(TokenType::OPEN_ROUND_BRACKET);
                 next();
             }
 
             else if (get() == ')') {
-                tokens.push_back({.type = TokenType::CLOSED_ROUND_BRACKET});
+                append(TokenType::CLOSED_ROUND_BRACKET);
                 next();
             }
 
             else if (get() == '{') {
-                tokens.push_back({.type = TokenType::OPEN_CURLY_BRACKET});
+                append(TokenType::OPEN_CURLY_BRACKET);
                 next();
             }
 
             else if (get() == '}') {
-                tokens.push_back({.type = TokenType::CLOSED_CURLY_BRACKET});
+                append(TokenType::CLOSED_CURLY_BRACKET);
                 next();
             }
 
@@ -166,6 +170,21 @@ private:
     const string source;
     size_t pointer = 0;
 
+    size_t line = 1;
+    size_t column = 1;
+
+    vector<Token> tokens;
+
+    void append(TokenType type) {
+        Token token { type, line, column };
+        tokens.push_back(token);
+    }
+    
+    void append(TokenType type, string value) {
+        Token token { type, line, column, value };
+        tokens.push_back(token);
+    }
+
     [[nodiscard]] char peak(int count) const {
         return source.at(pointer + count);
     }
@@ -174,8 +193,16 @@ private:
         return source.at(pointer);
     }
 
-    void next(int count = 1) {
-        pointer += 1;
+    void next() {
+
+        pointer++;
+
+        if (hasNext() && get() == '\n') {
+            line++;
+            column = 0;
+        }
+
+        column++;
     }
 
     [[nodiscard]] bool hasNext() const {
